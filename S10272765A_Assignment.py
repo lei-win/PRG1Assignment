@@ -1,5 +1,3 @@
-#SHWUN LEI WIN S10272765A P12
-
 import random
 
 # Prices ranges for minerals
@@ -37,4 +35,21 @@ Sa(V)e game
 (Q)uit to main menu
 ------------------------ Your choice?""")
 
-
+def sell_minerals(player):
+    if not player['inventory']:
+        return
+    print("You have minerals to sell. Selling all...")
+    total_sale = 0
+    for mineral, count in player['inventory'].items():
+        if count > 0:
+            price_range = MINERAL_PRICES.get(mineral, (0, 0))
+            # Random sale price per mineral piece for this visit
+            sale_price = random.randint(*price_range)
+            sale_value = sale_price * count
+            print(f" Sold {count} {mineral} ore at {sale_price} GP each for {sale_value} GP.")
+            total_sale += sale_value
+            player['inventory'][mineral] = 0  # emptied
+    player['gp'] += total_sale
+    player['load'] = 0
+    print(f"Total GP earned from selling: {total_sale}")
+    print(f"Current GP: {player['gp']}")
