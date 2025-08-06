@@ -53,3 +53,105 @@ def sell_minerals(player):
     player['load'] = 0
     print(f"Total GP earned from selling: {total_sale}")
     print(f"Current GP: {player['gp']}")
+def buy_stuff_menu(player):
+    while True:
+        backpack_price = player['backpack_capacity'] * 2
+        print(f"""
+----------------------- Shop Menu -------------------------
+(P)ickaxe upgrade to Level 2 to mine silver ore for 50 GP
+(B)ackpack upgrade to carry {player['backpack_capacity'] + 2} items for {backpack_price} GP
+(L)eave shop
+-----------------------------------------------------------
+GP: {player['gp']}
+-----------------------------------------------------------
+Your choice?""")
+        choice = input().strip().lower()
+        if choice == 'p':
+            # Pickaxe upgrade placeholder
+            if player['pickaxe_level'] >= 2:
+                print("You already have the silver pickaxe or better.")
+            elif player['gp'] >= 50:
+                player['gp'] -= 50
+                player['pickaxe_level'] = 2
+                print("Congratulations! You upgraded to pickaxe level 2 (silver)!")
+            else:
+                print("You don't have enough GP for the pickaxe upgrade.")
+        elif choice == 'b':
+            if player['gp'] >= backpack_price:
+                player['gp'] -= backpack_price
+                player['backpack_capacity'] += 2
+                print(f"Congratulations! You can now carry {player['backpack_capacity']} items!")
+            else:
+                print("You don't have enough GP for the backpack upgrade.")
+        elif choice == 'l':
+            break
+        else:
+            print("Invalid choice, please enter P, B, or L.")
+
+def print_player_info(player):
+    pickaxe_name = {1: "copper", 2: "silver"}.get(player['pickaxe_level'], "unknown")
+    print(f"""
+----- Player Information -----
+Name: {player['name']}
+Portal position: {player['portal_pos']}
+Pickaxe level: {player['pickaxe_level']} ({pickaxe_name})
+------------------------------
+Load: {player['load']} / {player['backpack_capacity']}
+------------------------------
+GP: {player['gp']}
+Steps taken: {player['steps']}
+------------------------------
+""")
+
+def new_game():
+    name = input("Greetings, miner! What is your name? ").strip()
+    print(f"Pleased to meet you, {name}. Welcome to Sundrop Town!")
+    player = {
+        'name': name,
+        'day': 1,
+        'backpack_capacity': 10,
+        'load': 0,
+        'gp': 0,
+        'steps': 0,
+        'pickaxe_level': 1,
+        'portal_pos': (0, 0),
+        'inventory': {'copper': 0, 'silver': 0, 'gold': 0},
+    }
+
+    while True:
+        # Auto-sell minerals on entering town
+        sell_minerals(player)
+
+        town_menu(player)
+        choice = input("Your choice? ").strip().lower()
+        if choice == 'q':
+            break
+        elif choice == 'b':
+            buy_stuff_menu(player)
+        elif choice == 'i':
+            print_player_info(player)
+        elif choice == 'm':
+            print("Mine map is not implemented yet.")
+        elif choice == 'e':
+            print("Mine entering is not implemented yet.")
+        elif choice == 'v':
+            print("Save game is not implemented yet.")
+        else:
+            print("Invalid choice, try again.")
+
+def main():
+    while True:
+        main_menu()
+        choice = input().strip().lower()
+        if choice == 'n':
+            new_game()
+        elif choice == 'l':
+            print("Load saved game is not implemented yet.")
+        elif choice == 'q':
+            print("Goodbye!")
+            break
+        else:
+            print("Invalid choice, please enter N, L, or Q.")
+
+if __name__ == "__main__":
+    main()
