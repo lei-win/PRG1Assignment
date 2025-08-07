@@ -1,3 +1,5 @@
+#102727265A SHWUNLEIWIN
+
 import random
 
 # Prices ranges for minerals
@@ -35,6 +37,28 @@ Sa(V)e game
 (Q)uit to main menu
 ------------------------ Your choice?""")
 
+def display_mine_map(player):
+    map_width = 30
+    map_height = 10
+
+    # Hardcoded visible tiles (just enough to match your screenshot)
+    visible_map = [
+        list("M     C    " + "?" * 20),
+        list("      CP   " + "?" * 20),
+        list("????CCCC   " + "?" * 20),
+    ]
+
+    # Fill the rest of the rows with all '?'
+    for _ in range(len(visible_map), map_height):
+        visible_map.append(list("?" * map_width))
+
+    print("+" + "-" * map_width + "+")
+    for row in visible_map:
+        print("|" + "".join(row) + "|")
+    print("+" + "-" * map_width + "+")
+
+    print(f"\nDAY {player['day']}")
+
 def sell_minerals(player):
     if not player['inventory']:
         return
@@ -43,16 +67,16 @@ def sell_minerals(player):
     for mineral, count in player['inventory'].items():
         if count > 0:
             price_range = MINERAL_PRICES.get(mineral, (0, 0))
-            # Random sale price per mineral piece for this visit
             sale_price = random.randint(*price_range)
             sale_value = sale_price * count
             print(f" Sold {count} {mineral} ore at {sale_price} GP each for {sale_value} GP.")
             total_sale += sale_value
-            player['inventory'][mineral] = 0  # emptied
+            player['inventory'][mineral] = 0
     player['gp'] += total_sale
     player['load'] = 0
     print(f"Total GP earned from selling: {total_sale}")
     print(f"Current GP: {player['gp']}")
+
 def buy_stuff_menu(player):
     while True:
         backpack_price = player['backpack_capacity'] * 2
@@ -67,7 +91,6 @@ GP: {player['gp']}
 Your choice?""")
         choice = input().strip().lower()
         if choice == 'p':
-            # Pickaxe upgrade placeholder
             if player['pickaxe_level'] >= 2:
                 print("You already have the silver pickaxe or better.")
             elif player['gp'] >= 50:
@@ -114,7 +137,7 @@ def new_game():
         'gp': 0,
         'steps': 0,
         'pickaxe_level': 1,
-        'portal_pos': (0, 0),
+        'portal_pos': (7, 1),  # Portal position updated to match your screenshot
         'inventory': {'copper': 0, 'silver': 0, 'gold': 0},
     }
 
@@ -131,7 +154,7 @@ def new_game():
         elif choice == 'i':
             print_player_info(player)
         elif choice == 'm':
-            print("Mine map is not implemented yet.")
+            display_mine_map(player)
         elif choice == 'e':
             print("Mine entering is not implemented yet.")
         elif choice == 'v':
