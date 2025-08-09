@@ -9,6 +9,8 @@ MINERAL_PRICES = {
     'gold': (10, 18),
 }
 
+# main menu
+
 def main_menu():
     print("""
 ---------------- Welcome to Sundrop Caves! ----------------
@@ -37,6 +39,8 @@ Sa(V)e game
 (Q)uit to main menu
 ------------------------ Your choice?""")
 
+# selling of minerals
+
 def sell_minerals(player):
     if not player['inventory']:
         return
@@ -59,7 +63,7 @@ def buy_stuff_menu(player):
     while True:
         backpack_price = player['backpack_capacity'] * 2
         print(f"""
------------------------ Shop Menu -------------------------
+----------------------- Shop Menu ------------------------- 
 (P)ickaxe upgrade to Level 2 to mine silver ore for 50 GP
 (B)ackpack upgrade to carry {player['backpack_capacity'] + 2} items for {backpack_price} GP
 (L)eave shop
@@ -103,7 +107,7 @@ GP: {player['gp']}
 Steps taken: {player['steps']}
 ------------------------------
 """)
-
+# for saving the game to text file - the format
 def save_game(player):
     with open("save_player.txt", "w") as f:
         f.write(f"{player['name']}\n")
@@ -117,6 +121,7 @@ def save_game(player):
         f.write(f"{player['inventory']['copper']} {player['inventory']['silver']} {player['inventory']['gold']}\n")
     print("Game saved.")
 
+# to read the saved file when load game is chosen
 def load_game():
     try:
         with open("save_player.txt", "r") as f:
