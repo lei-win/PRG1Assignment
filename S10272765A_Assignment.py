@@ -37,28 +37,6 @@ Sa(V)e game
 (Q)uit to main menu
 ------------------------ Your choice?""")
 
-def display_mine_map(player):
-    map_width = 30
-    map_height = 10
-
-    # Hardcoded visible tiles (just enough to match your screenshot)
-    visible_map = [
-        list("M     C    " + "?" * 20),
-        list("      CP   " + "?" * 20),
-        list("????CCCC   " + "?" * 20),
-    ]
-
-    # Fill the rest of the rows with all '?'
-    for _ in range(len(visible_map), map_height):
-        visible_map.append(list("?" * map_width))
-
-    print("+" + "-" * map_width + "+")
-    for row in visible_map:
-        print("|" + "".join(row) + "|")
-    print("+" + "-" * map_width + "+")
-
-    print(f"\nDAY {player['day']}")
-
 def sell_minerals(player):
     if not player['inventory']:
         return
@@ -126,25 +104,73 @@ Steps taken: {player['steps']}
 ------------------------------
 """)
 
-def new_game():
-    name = input("Greetings, miner! What is your name? ").strip()
-    print(f"Pleased to meet you, {name}. Welcome to Sundrop Town!")
-    player = {
-        'name': name,
-        'day': 1,
-        'backpack_capacity': 10,
-        'load': 0,
-        'gp': 0,
-        'steps': 0,
-        'pickaxe_level': 1,
-        'portal_pos': (7, 1),  # Portal position updated to match your screenshot
-        'inventory': {'copper': 0, 'silver': 0, 'gold': 0},
-    }
+def save_game(player):
+    with open("save_player.txt", "w") as f:
+        f.write(f"{player['name']}\n")
+        f.write(f"{player['day']}\n")
+        f.write(f"{player['backpack_capacity']}\n")
+        f.write(f"{player['load']}\n")
+        f.write(f"{player['gp']}\n")
+        f.write(f"{player['steps']}\n")
+        f.write(f"{player['pickaxe_level']}\n")
+        f.write(f"{player['portal_pos'][0]} {player['portal_pos'][1]}\n")
+        f.write(f"{player['inventory']['copper']} {player['inventory']['silver']} {player['inventory']['gold']}\n")
+    print("Game saved.")
+
+def load_game():
+    try:
+        with open("save_player.txt", "r") as f:
+            name = f.readline().strip()
+            day = int(f.readline())
+            backpack_capacity = int(f.readline())
+            load = int(f.readline())
+            gp = int(f.readline())
+            steps = int(f.readline())
+            pickaxe_level = int(f.readline())
+            portal_x, portal_y = map(int, f.readline().split())
+            copper, silver, gold = map(int, f.readline().split())
+
+        player = {
+            'name': name,
+            'day': day,
+            'backpack_capacity': backpack_capacity,
+            'load': load,
+            'gp': gp,
+            'steps': steps,
+            'pickaxe_level': pickaxe_level,
+            'portal_pos': (portal_x, portal_y),
+            'inventory': {
+                'copper': copper,
+                'silver': silver,
+                'gold': gold,
+            },
+        }
+
+        print(f"Welcome back, {name}!")
+        return player
+
+    except FileNotFoundError:
+        print("No save file found.")
+        return None
+
+def new_game(player=None):
+    if not player:
+        name = input("Greetings, miner! What is your name? ").strip()
+        print(f"Pleased to meet you, {name}. Welcome to Sundrop Town!")
+        player = {
+            'name': name,
+            'day': 1,
+            'backpack_capacity': 10,
+            'load': 0,
+            'gp': 0,
+            'steps': 0,
+            'pickaxe_level': 1,
+            'portal_pos': (0, 0),
+            'inventory': {'copper': 0, 'silver': 0, 'gold': 0},
+        }
 
     while True:
-        # Auto-sell minerals on entering town
         sell_minerals(player)
-
         town_menu(player)
         choice = input("Your choice? ").strip().lower()
         if choice == 'q':
@@ -154,11 +180,11 @@ def new_game():
         elif choice == 'i':
             print_player_info(player)
         elif choice == 'm':
-            display_mine_map(player)
+            print("Mine map is not implemented yet.")
         elif choice == 'e':
             print("Mine entering is not implemented yet.")
         elif choice == 'v':
-            print("Save game is not implemented yet.")
+            save_game(player)
         else:
             print("Invalid choice, try again.")
 
@@ -169,7 +195,9 @@ def main():
         if choice == 'n':
             new_game()
         elif choice == 'l':
-            print("Load saved game is not implemented yet.")
+            player = load_game()
+            if player:
+                new_game(player)
         elif choice == 'q':
             print("Goodbye!")
             break
