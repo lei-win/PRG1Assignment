@@ -204,11 +204,140 @@ def new_game(player=None):
         elif choice == 'm':
             see_mine_map()
         elif choice == 'e':
-            print("Mine entering is not implemented yet.")
+            mine_map = load_mine()  # DONT load the mine map from file
+            enter_mine(player, mine_map)
+
         elif choice == 'v':
             save_game(player)
         else:
             print("Invalid choice, try again.")
+
+# map map making of the moving in the map
+
+MINERAL_PRICES = {
+    'copper': (1, 3),
+    'silver': (5, 8),
+    'gold': (10, 18),
+}
+
+MINERAL_ORE_RANGES = {
+    'C': (1, 5),  # copper
+    'S': (1, 3),  # silver
+    'G': (1, 2),  # gold
+}
+
+MINERAL_NAMES = {
+    'C': 'copper',
+    'S': 'silver',
+    'G': 'gold',
+}
+
+
+def show_viewport(mine_map, x, y):
+    print("+---+")
+    for dy in range(-1, 2):
+        row = "|"
+        for dx in range(-1, 2):
+            nx, ny = x + dx, y + dy
+            if nx == x and ny == y:
+                row += "M"
+            elif 0 <= ny < len(mine_map) and 0 <= nx < len(mine_map[0]):
+                row += mine_map[ny][nx]
+            else:
+                row += " "  # outside map bounds
+        row += "|"
+        print(row)
+    print("+---+")
+
+
+def load_mine():
+    with open(r"C:\Users\Shwun\OneDrive\Desktop\2. PRG 1\ASSIGNMENT\PRG1Assignment\level1.txt" \
+    "", "r") as f:
+        return [list(line.rstrip("\n")) for line in f]
+
+def enter_mine(player, mine_map):
+    x, y = player.get('mine_pos', player['portal_pos'])
+
+    turns_left = 20
+    player['steps'] = player.get('steps', 0)
+
+    while turns_left > 0:
+        print(f"\nDAY {player['day']}")
+        show_viewport(mine_map, x, y)
+        print(f"Turns left: {turns_left}    Load: {player['load']} / {player['backpack_capacity']}    Steps: {player['steps']}")
+        print("(WASD) to move")
+        print("(M)ap, (I)nformation, (P)ortal, (Q)uit to main menu")
+        action = input("Action? ").strip().lower()
+
+        if action == 'q':
+            print("Quitting to main menu...")
+            player['mine_pos'] = (x, y)
+            break
+        elif action == 'm':
+            print("Full mine map display is not implemented yet.")
+            continue
+        elif action == 'i':
+            print_player_info(player)
+            continue
+        elif action == 'p':
+            print("Using portal to return to town...")
+            player['portal_pos'] = (x, y)
+            player['mine_pos'] = (0, 0)
+            player['day'] += 1
+            break
+        elif action in ['w', 'a', 's', 'd']:
+            dx, dy = 0, 0
+            if action == 'w': dy = -1
+            elif action == 'a': dx = -1
+            elif action == 's': dy = 1
+            elif action == 'd': dx = 1
+
+            new_x, new_y = x + dx, y + dy
+
+            if not (0 <= new_y < len(mine_map) and 0 <= new_x < len(mine_map[0])):
+                print("You can't move past the edge of the mine.")
+                continue
+
+            target_cell = mine_map[new_y][new_x]
+
+            if target_cell in MINERAL_NAMES:
+                if player['load'] >= player['backpack_capacity']:
+                    print("Your backpack is full. You cannot step onto a mineral node.")
+                    continue
+                ore_name = MINERAL_NAMES[target_cell]
+                min_ore, max_ore = MINERAL_ORE_RANGES[target_cell]
+                mined_amount = random.randint(min_ore, max_ore)
+                space_left = player['backpack_capacity'] - player['load']
+                if mined_amount > space_left:
+                    print(f"You mined {mined_amount} piece(s) of {ore_name}.")
+                    print(f"...but you can only carry {space_left} more piece(s)!")
+                    mined_amount = space_left
+                else:
+                    print(f"You mined {mined_amount} piece(s) of {ore_name}.")
+                player['inventory'][ore_name] += mined_amount
+                player['load'] += mined_amount
+                mine_map[new_y][new_x] = ' '
+
+            if target_cell == 'T':
+                print("You stepped on the Town portal. Returning to town...")
+                player['mine_pos'] = (0, 0)
+                player['portal_pos'] = (0, 0)
+                player['day'] += 1
+                break
+
+            x, y = new_x, new_y
+            player['steps'] += 1
+            turns_left -= 1
+
+        else:
+            print("Invalid action.")
+
+    else:
+        print("You have no turns left today. Returning to town...")
+        player['mine_pos'] = (x, y)
+        player['day'] += 1
+
+
 
 def main():
     while True:
