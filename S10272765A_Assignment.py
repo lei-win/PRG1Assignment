@@ -58,6 +58,7 @@ def sell_minerals(player):
     player['load'] = 0
     print(f"Total GP earned from selling: {total_sale}")
     print(f"Current GP: {player['gp']}")
+#shop menu 
 
 def buy_stuff_menu(player):
     while True:
