@@ -297,6 +297,13 @@ def enter_mine(player, mine_map):
             new_x = x + dx
             new_y = y + dy
 
+            if not (0 <= new_y < len(mine_map) and 0 <= new_x < len(mine_map[0])):
+                print("You can't move past the edge of the mine.")
+                turns_left -= 1  # Unsuccessful move costs turn
+                continue
+
+            target_cell = mine_map[new_y][new_x]
+
 
 
 
