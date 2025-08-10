@@ -300,11 +300,16 @@ def load_mine():
 
 def enter_mine(player, mine_map):
     x, y = player.get('mine_pos', player['portal_pos'])
+    
+    # Create fog map here with player's current position
+    fog_map = create_fog_map(len(mine_map), len(mine_map[0]), (y, x))
+    reveal_area(fog_map, mine_map, (y, x))
 
     turns_left = 20
     player['steps'] = player.get('steps', 0)
 
     while turns_left > 0:
+
         print(f"\nDAY {player['day']}")
         show_viewport(mine_map, x, y)
         print(f"Turns left: {turns_left}    Load: {player['load']} / {player['backpack_capacity']}    Steps: {player['steps']}")
