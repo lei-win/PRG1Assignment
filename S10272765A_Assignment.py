@@ -310,7 +310,8 @@ def enter_mine(player, mine_map):
             player['mine_pos'] = (x, y)
             break
         elif action == 'm':
-            print("Full mine map display is not implemented yet.")
+            print("\nCurrent mine map (fog of war):")
+            print_map(fog_map)
             continue
         elif action == 'i':
             print_player_info(player)
