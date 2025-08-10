@@ -58,10 +58,7 @@ def sell_minerals(player):
     player['gp'] += total_sale
     player['load'] = 0
     print(f"Total GP earned from selling: {total_sale}")
-    player['gp'] = 550
     print(f"You now have {player['gp']} GP!")
-
-    player['gp'] = max(player['gp'], 550)
     
     print(f"Total GP earned from selling: {total_sale}")
     print(f"You now have {player['gp']} GP!")
