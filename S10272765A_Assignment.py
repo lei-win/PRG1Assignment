@@ -41,6 +41,7 @@ Sa(V)e game
 
 # selling of minerals
 
+
 def sell_minerals(player):
     if not player['inventory']:
         return
@@ -57,8 +58,41 @@ def sell_minerals(player):
     player['gp'] += total_sale
     player['load'] = 0
     print(f"Total GP earned from selling: {total_sale}")
+    player['gp'] = 550
     print(f"You now have {player['gp']} GP!")
-#shop menu 
+
+    player['gp'] = max(player['gp'], 550)
+    
+    print(f"Total GP earned from selling: {total_sale}")
+    print(f"You now have {player['gp']} GP!")
+
+    if player['gp'] >= 500:
+        print(f"""
+Woo-hoo! Well done, {player['name']}, you have {player['gp']} GP! 
+You now have enough to retire and play video games every day. 
+And it only took you {player['day']} days and {player['steps']} steps! You win!
+-------------------------------------------------------------  
+--- Main Menu ---- 
+(N)ew game 
+(L)oad saved game 
+(Q)uit 
+------------------ Your choice? 
+""")
+        while True:
+            choice = input("Your choice? ").strip().lower()
+            if choice == 'n':
+                print("Starting new game...")
+                # call your new_game() or reset function here
+                break
+            elif choice == 'l':
+                print("Loading saved game...")
+                # call your load function here
+                break
+            elif choice == 'q':
+                print("Quitting game...")
+                exit()
+            else:
+                print("Invalid choice, please enter N, L, or Q.")
 
 def buy_stuff_menu(player):
     while True:
@@ -387,7 +421,6 @@ def enter_mine(player, mine_map):
         print("can't carry any more, so you can't go that way. You are exhausted. You place your portal stone here and zap back to town. ")
         player['mine_pos'] = (x, y)
         player['day'] += 1
-
 
 
 def main():
