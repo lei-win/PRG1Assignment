@@ -232,34 +232,26 @@ MINERAL_NAMES = {
     'G': 'gold',
 }
 
-
-def show_viewport(mine_map, x, y):
-    print("+---+")
-    for dy in range(-1, 2):
-        row = "|"
-        for dx in range(-1, 2):
-            nx, ny = x + dx, y + dy
-            if nx == x and ny == y:
-                row += "M"
-            elif 0 <= ny < len(mine_map) and 0 <= nx < len(mine_map[0]):
-                row += mine_map[ny][nx]
-            else:
-                row += " "  # outside map bounds
-        row += "|"
-        print(row)
-    print("+---+")
+MINERAL_NAMES = {'C': 'copper', 'S': 'silver', 'G': 'gold'}
+MINERAL_ORE_RANGES = {'C': (1, 5), 'S': (1, 3), 'G': (1, 2)}
 
 def load_mine(filename):
     with open(filename, "r") as f:
         return [list(line.rstrip("\n")) for line in f]
 
-
-# Create a hidden map with '?' everywhere except the starting position
 def create_fog_map(rows, cols, start_pos):
-    fog = [["?" for _ in range(cols)] for _ in range(rows)]
+    fog = [['?' for _ in range(cols)] for _ in range(rows)]
     r, c = start_pos
-    fog[r][c] = "T"  # Show starting tile
+    fog[r][c] = 'T'  # starting point visible
     return fog
+
+def reveal_area(fog_map, full_map, player_pos, radius=1):
+    rows, cols = len(full_map), len(full_map[0])
+    pr, pc = player_pos
+    for r in range(pr - radius, pr + radius + 1):
+        for c in range(pc - radius, pc + radius + 1):
+            if 0 <= r < rows and 0 <= c < cols:
+                fog_map[r][c] = full_map[r][c]
 
 def print_fogged_map(fog_map):
     width = len(fog_map[0])
@@ -268,13 +260,43 @@ def print_fogged_map(fog_map):
         print("|" + "".join(row) + "|")
     print("+" + "-" * width + "+")
 
+def enter_mine(player, mine_map):
+    x, y = player.get('mine_pos', (0, 0))  # x = col, y = row
 
+    fog_map = create_fog_map(len(mine_map), len(mine_map[0]), (y, x))
+    reveal_area(fog_map, mine_map, (y, x))
 
+    turns_left = 20
+    player['steps'] = player.get('steps', 0)
+    player['load'] = player.get('load', 0)
+    player['backpack_capacity'] = player.get('backpack_capacity', 12)
+    player['inventory'] = player.get('inventory', {'copper':0, 'silver':0, 'gold':0})
 
-    else:
-        print("can't carry any more, so you can't go that way. You are exhausted. You place your portal stone here and zap back to town. ")
-        player['mine_pos'] = (x, y)
-        player['day'] += 1
+    while turns_left > 0:
+        print(f"\nDAY {player['day']}")
+        print(f"Turns left: {turns_left}    Load: {player['load']} / {player['backpack_capacity']}    Steps: {player['steps']}")
+        print("(WASD) to move")
+        print("(M)ap, (Q)uit to main menu")
+        action = input("Action? ").strip().lower()
+
+        if action == 'q':
+            print("Quitting to main menu...")
+            player['mine_pos'] = (x, y)
+            break
+        elif action == 'm':
+            print("\nCurrent mine map (fog of war):")
+            print_fogged_map(fog_map)
+            continue
+        elif action in ['w','a','s','d']:
+            dx, dy = 0, 0
+            if action == 'w': dy = -1
+            elif action == 'a': dx = -1
+            elif action == 's': dy = 1
+            elif action == 'd': dx = 1
+
+            new_x = x + dx
+            new_y = y + dy
+
 
 
 
