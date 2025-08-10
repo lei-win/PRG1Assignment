@@ -249,6 +249,43 @@ def show_viewport(mine_map, x, y):
         print(row)
     print("+---+")
 
+def load_mine():
+    with open(r"C:\Users\Shwun\OneDrive\Desktop\2. PRG 1\ASSIGNMENT\PRG1Assignment\level1.txt", "r") as f:
+        return [list(line.rstrip("\n")) for line in f]
+
+# Create a hidden map with '?' everywhere except the starting position
+def create_fog_map(rows, cols, start_pos):
+    fog = [["?" for _ in range(cols)] for _ in range(rows)]
+    r, c = start_pos
+    fog[r][c] = "T"  # Show starting tile
+    return fog
+
+# Reveal tiles around the player
+def reveal_area(fog_map, full_map, player_pos, radius=1):
+    rows, cols = len(full_map), len(full_map[0])
+    pr, pc = player_pos
+    for r in range(pr - radius, pr + radius + 1):
+        for c in range(pc - radius, pc + radius + 1):
+            if 0 <= r < rows and 0 <= c < cols:
+                fog_map[r][c] = full_map[r][c]
+
+# Print any map in a nice border
+def print_map(map_data):
+    width = len(map_data[0])
+    print("+" + "-" * width + "+")
+    for row in map_data:
+        print("|" + "".join(row) + "|")
+    print("+" + "-" * width + "+")
+
+# Example usage
+level_path = r"C:\Users\Shwun\OneDrive\Desktop\2. PRG 1\ASSIGNMENT\PRG1Assignment\level1.txt"
+full_map = load_mine(level_path)
+fog_map = create_fog_map(len(full_map), len(full_map[0]), (0, 0))
+
+# Simulate revealing and showing map
+reveal_area(fog_map, full_map, (0, 0))
+print_map(fog_map)
+
 
 def load_mine():
     with open(r"C:\Users\Shwun\OneDrive\Desktop\2. PRG 1\ASSIGNMENT\PRG1Assignment\level1.txt", "r") as f:
