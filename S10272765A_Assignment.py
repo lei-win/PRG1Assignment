@@ -41,6 +41,11 @@ Sa(V)e game
 
 # selling of minerals
 
+def save_score(player):
+    # Append player's score to scores.txt
+    with open("scores.txt", "a") as f:
+        line = f"{player['name']},{player['day']},{player['steps']},{player['gp']}\n"
+        f.write(line)
 
 def sell_minerals(player):
     if not player['inventory']:
