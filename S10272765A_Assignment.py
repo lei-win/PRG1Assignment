@@ -232,26 +232,34 @@ MINERAL_NAMES = {
     'G': 'gold',
 }
 
-MINERAL_NAMES = {'C': 'copper', 'S': 'silver', 'G': 'gold'}
-MINERAL_ORE_RANGES = {'C': (1, 5), 'S': (1, 3), 'G': (1, 2)}
+
+def show_viewport(mine_map, x, y):
+    print("+---+")
+    for dy in range(-1, 2):
+        row = "|"
+        for dx in range(-1, 2):
+            nx, ny = x + dx, y + dy
+            if nx == x and ny == y:
+                row += "M"
+            elif 0 <= ny < len(mine_map) and 0 <= nx < len(mine_map[0]):
+                row += mine_map[ny][nx]
+            else:
+                row += " "  # outside map bounds
+        row += "|"
+        print(row)
+    print("+---+")
 
 def load_mine(filename):
     with open(filename, "r") as f:
         return [list(line.rstrip("\n")) for line in f]
 
-def create_fog_map(rows, cols, start_pos):
-    fog = [['?' for _ in range(cols)] for _ in range(rows)]
-    r, c = start_pos
-    fog[r][c] = 'T'  # starting point visible
-    return fog
 
-def reveal_area(fog_map, full_map, player_pos, radius=1):
-    rows, cols = len(full_map), len(full_map[0])
-    pr, pc = player_pos
-    for r in range(pr - radius, pr + radius + 1):
-        for c in range(pc - radius, pc + radius + 1):
-            if 0 <= r < rows and 0 <= c < cols:
-                fog_map[r][c] = full_map[r][c]
+# Create a hidden map with '?' everywhere except the starting position
+def create_fog_map(rows, cols, start_pos):
+    fog = [["?" for _ in range(cols)] for _ in range(rows)]
+    r, c = start_pos
+    fog[r][c] = "T"  # Show starting tile
+    return fog
 
 def print_fogged_map(fog_map):
     width = len(fog_map[0])
@@ -260,23 +268,48 @@ def print_fogged_map(fog_map):
         print("|" + "".join(row) + "|")
     print("+" + "-" * width + "+")
 
-def enter_mine(player, mine_map):
-    x, y = player.get('mine_pos', (0, 0))  # x = col, y = row
+# Reveal tiles around the player
+def reveal_area(fog_map, full_map, player_pos, radius=1):
+    rows, cols = len(full_map), len(full_map[0])
+    pr, pc = player_pos
+    for r in range(pr - radius, pr + radius + 1):
+        for c in range(pc - radius, pc + radius + 1):
+            if 0 <= r < rows and 0 <= c < cols:
+                fog_map[r][c] = full_map[r][c]
 
-    fog_map = create_fog_map(len(mine_map), len(mine_map[0]), (y, x))
-    reveal_area(fog_map, mine_map, (y, x))
+# Print any map in a nice border
+def print_map(map_data):
+    width = len(map_data[0])
+    print("+" + "-" * width + "+")
+    for row in map_data:
+        print("|" + "".join(row) + "|")
+    print("+" + "-" * width + "+")
+
+level_path = r"C:\Users\Shwun\OneDrive\Desktop\2. PRG 1\ASSIGNMENT\PRG1Assignment\level1.txt"
+full_map = load_mine(level_path)
+fog_map = create_fog_map(len(full_map), len(full_map[0]), (0, 0))
+
+# Simulate revealing and showing map
+reveal_area(fog_map, full_map, (0, 0))
+print_map(fog_map)
+
+
+def load_mine():
+    with open(r"C:\Users\Shwun\OneDrive\Desktop\2. PRG 1\ASSIGNMENT\PRG1Assignment\level1.txt", "r") as f:
+        return [list(line.rstrip("\n")) for line in f]
+
+def enter_mine(player, mine_map):
+    x, y = player.get('mine_pos', player['portal_pos'])
 
     turns_left = 20
     player['steps'] = player.get('steps', 0)
-    player['load'] = player.get('load', 0)
-    player['backpack_capacity'] = player.get('backpack_capacity', 12)
-    player['inventory'] = player.get('inventory', {'copper':0, 'silver':0, 'gold':0})
 
     while turns_left > 0:
         print(f"\nDAY {player['day']}")
+        show_viewport(mine_map, x, y)
         print(f"Turns left: {turns_left}    Load: {player['load']} / {player['backpack_capacity']}    Steps: {player['steps']}")
         print("(WASD) to move")
-        print("(M)ap, (Q)uit to main menu")
+        print("(M)ap, (I)nformation, (P)ortal, (Q)uit to main menu")
         action = input("Action? ").strip().lower()
 
         if action == 'q':
@@ -287,23 +320,67 @@ def enter_mine(player, mine_map):
             print("\nCurrent mine map (fog of war):")
             print_fogged_map(fog_map)
             continue
-        elif action in ['w','a','s','d']:
+        elif action == 'i':
+            print_player_info(player)
+            continue
+        elif action == 'p':
+            print("Using portal to return to town...")
+            player['portal_pos'] = (x, y)
+            player['mine_pos'] = (0, 0)
+            player['day'] += 1
+            break
+        elif action in ['w', 'a', 's', 'd']:
             dx, dy = 0, 0
             if action == 'w': dy = -1
             elif action == 'a': dx = -1
             elif action == 's': dy = 1
             elif action == 'd': dx = 1
 
-            new_x = x + dx
-            new_y = y + dy
+            new_x, new_y = x + dx, y + dy
 
             if not (0 <= new_y < len(mine_map) and 0 <= new_x < len(mine_map[0])):
                 print("You can't move past the edge of the mine.")
-                turns_left -= 1  # Unsuccessful move costs turn
                 continue
 
             target_cell = mine_map[new_y][new_x]
 
+            if target_cell in MINERAL_NAMES:
+                if player['load'] >= player['backpack_capacity']:
+                    print("Your backpack is full. You cannot step onto a mineral node.")
+                    continue
+                ore_name = MINERAL_NAMES[target_cell]
+                min_ore, max_ore = MINERAL_ORE_RANGES[target_cell]
+                mined_amount = random.randint(min_ore, max_ore)
+                space_left = player['backpack_capacity'] - player['load']
+                if mined_amount > space_left:
+                    print(f"You mined {mined_amount} piece(s) of {ore_name}.")
+                    print(f"...but you can only carry {space_left} more piece(s)!")
+                    mined_amount = space_left
+                else:
+                    print(f"You mined {mined_amount} piece(s) of {ore_name}.")
+                player['inventory'][ore_name] += mined_amount
+                player['load'] += mined_amount
+                mine_map[new_y][new_x] = ' '
+
+            if target_cell == 'T':
+                print("You stepped on the Town portal. Returning to town...")
+                player['mine_pos'] = (0, 0)
+                player['portal_pos'] = (0, 0)
+                player['day'] += 1
+                break
+
+            x, y = new_x, new_y
+            player['steps'] += 1
+            turns_left -= 1
+            reveal_area(fog_map, mine_map, (y, x))
+
+        else:
+            print("Invalid action.")
+
+    else:
+        print("can't carry any more, so you can't go that way. You are exhausted. You place your portal stone here and zap back to town. ")
+        player['mine_pos'] = (x, y)
+        player['day'] += 1
 
 
 
