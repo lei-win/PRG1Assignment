@@ -249,9 +249,10 @@ def show_viewport(mine_map, x, y):
         print(row)
     print("+---+")
 
-def load_mine():
-    with open(r"C:\Users\Shwun\OneDrive\Desktop\2. PRG 1\ASSIGNMENT\PRG1Assignment\level1.txt", "r") as f:
+def load_mine(filename):
+    with open(filename, "r") as f:
         return [list(line.rstrip("\n")) for line in f]
+
 
 # Create a hidden map with '?' everywhere except the starting position
 def create_fog_map(rows, cols, start_pos):
@@ -259,6 +260,13 @@ def create_fog_map(rows, cols, start_pos):
     r, c = start_pos
     fog[r][c] = "T"  # Show starting tile
     return fog
+
+def print_fogged_map(fog_map):
+    width = len(fog_map[0])
+    print("+" + "-" * width + "+")
+    for row in fog_map:
+        print("|" + "".join(row) + "|")
+    print("+" + "-" * width + "+")
 
 # Reveal tiles around the player
 def reveal_area(fog_map, full_map, player_pos, radius=1):
@@ -277,7 +285,6 @@ def print_map(map_data):
         print("|" + "".join(row) + "|")
     print("+" + "-" * width + "+")
 
-# Example usage
 level_path = r"C:\Users\Shwun\OneDrive\Desktop\2. PRG 1\ASSIGNMENT\PRG1Assignment\level1.txt"
 full_map = load_mine(level_path)
 fog_map = create_fog_map(len(full_map), len(full_map[0]), (0, 0))
@@ -311,7 +318,7 @@ def enter_mine(player, mine_map):
             break
         elif action == 'm':
             print("\nCurrent mine map (fog of war):")
-            print_map(fog_map)
+            print_fogged_map(fog_map)
             continue
         elif action == 'i':
             print_player_info(player)
@@ -365,6 +372,7 @@ def enter_mine(player, mine_map):
             x, y = new_x, new_y
             player['steps'] += 1
             turns_left -= 1
+            reveal_area(fog_map, mine_map, (y, x))
 
         else:
             print("Invalid action.")
