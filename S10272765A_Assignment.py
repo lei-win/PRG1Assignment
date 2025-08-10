@@ -24,6 +24,7 @@ and live happily ever after?
 --- Main Menu ----
 (N)ew game
 (L)oad saved game
+(V)iew Top Scores
 (Q)uit
 ------------------ Your choice?""")
 
@@ -46,6 +47,39 @@ def save_score(player):
     with open("scores.txt", "a") as f:
         line = f"{player['name']},{player['day']},{player['steps']},{player['gp']}\n"
         f.write(line)
+
+def load_scores():
+    scores = []
+    try:
+        with open("scores.txt", "r") as f:
+            for line in f:
+                line = line.strip()
+                if line:
+                    name, days, steps, gp = line.split(",")
+                    scores.append({
+                        "name": name,
+                        "days": int(days),
+                        "steps": int(steps),
+                        "gp": int(gp)
+                    })
+    except FileNotFoundError:
+        # No scores yet
+        pass
+    
+    # Sort by days ascending, then steps ascending, then gp descending
+    scores.sort(key=lambda x: (x["days"], x["steps"], -x["gp"]))
+    return scores
+        
+def display_top_scores():
+    scores = load_scores()
+    print("\n--- Sundrop Mountain Top Scores ---")
+    print(f"{'Rank':<5}{'Name':<15}{'Days':<6}{'Steps':<7}{'GP':<5}")
+    print("-" * 40)
+    for i, score in enumerate(scores[:5], start=1):
+        print(f"{i:<5}{score['name']:<15}{score['days']:<6}{score['steps']:<7}{score['gp']:<5}")
+    print("-" * 40)
+    input("Press Enter to return to the main menu...")
+
 
 def sell_minerals(player):
     if not player['inventory']:
@@ -77,6 +111,7 @@ And it only took you {player['day']} days and {player['steps']} steps! You win!
 --- Main Menu ---- 
 (N)ew game 
 (L)oad saved game 
+(V)iew Top Scores
 (Q)uit 
 ------------------ Your choice? 
 """)
@@ -254,7 +289,8 @@ def new_game(player=None):
         else:
             print("Invalid choice, try again.")
 
-# map map making of the moving in the map
+
+
 
 MINERAL_PRICES = {
     'copper': (1, 3),
@@ -438,8 +474,10 @@ def main():
         elif choice == 'q':
             print("Goodbye!")
             break
+        elif choice == 'v':
+            display_top_scores()
         else:
-            print("Invalid choice, please enter N, L, or Q.")
+            print("Invalid choice, please enter N, L, V or Q.")
 
 if __name__ == "__main__":
     main()
