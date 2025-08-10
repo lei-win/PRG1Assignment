@@ -300,16 +300,17 @@ def load_mine():
 
 def enter_mine(player, mine_map):
     x, y = player.get('mine_pos', player['portal_pos'])
-    
-    # Create fog map here with player's current position
+
+    # Initialize fog map once, with '?' everywhere but 'T' at starting pos
     fog_map = create_fog_map(len(mine_map), len(mine_map[0]), (y, x))
+
+    # Reveal starting 3x3 area
     reveal_area(fog_map, mine_map, (y, x))
 
     turns_left = 20
     player['steps'] = player.get('steps', 0)
 
     while turns_left > 0:
-
         print(f"\nDAY {player['day']}")
         show_viewport(mine_map, x, y)
         print(f"Turns left: {turns_left}    Load: {player['load']} / {player['backpack_capacity']}    Steps: {player['steps']}")
@@ -318,7 +319,6 @@ def enter_mine(player, mine_map):
         action = input("Action? ").strip().lower()
 
         if action == 'q':
-            print("Quitting to main menu...")
             player['mine_pos'] = (x, y)
             break
         elif action == 'm':
@@ -329,7 +329,6 @@ def enter_mine(player, mine_map):
             print_player_info(player)
             continue
         elif action == 'p':
-            print("Using portal to return to town...")
             player['portal_pos'] = (x, y)
             player['mine_pos'] = (0, 0)
             player['day'] += 1
@@ -345,6 +344,7 @@ def enter_mine(player, mine_map):
 
             if not (0 <= new_y < len(mine_map) and 0 <= new_x < len(mine_map[0])):
                 print("You can't move past the edge of the mine.")
+                turns_left -= 1  # unsuccessful move still costs turn
                 continue
 
             target_cell = mine_map[new_y][new_x]
@@ -352,7 +352,9 @@ def enter_mine(player, mine_map):
             if target_cell in MINERAL_NAMES:
                 if player['load'] >= player['backpack_capacity']:
                     print("Your backpack is full. You cannot step onto a mineral node.")
+                    turns_left -= 1  # unsuccessful move still costs turn
                     continue
+                # mining code here...
                 ore_name = MINERAL_NAMES[target_cell]
                 min_ore, max_ore = MINERAL_ORE_RANGES[target_cell]
                 mined_amount = random.randint(min_ore, max_ore)
@@ -366,21 +368,22 @@ def enter_mine(player, mine_map):
                 player['inventory'][ore_name] += mined_amount
                 player['load'] += mined_amount
                 mine_map[new_y][new_x] = ' '
-
-            if target_cell == 'T':
+            elif target_cell == 'T':
                 print("You stepped on the Town portal. Returning to town...")
                 player['mine_pos'] = (0, 0)
                 player['portal_pos'] = (0, 0)
                 player['day'] += 1
                 break
 
+            # Update position
             x, y = new_x, new_y
             player['steps'] += 1
             turns_left -= 1
+            # Reveal newly visible area permanently
             reveal_area(fog_map, mine_map, (y, x))
-
         else:
             print("Invalid action.")
+            # You can decide if invalid input costs turn or not
 
     else:
         print("can't carry any more, so you can't go that way. You are exhausted. You place your portal stone here and zap back to town. ")
