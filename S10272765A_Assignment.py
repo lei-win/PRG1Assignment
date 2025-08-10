@@ -251,8 +251,7 @@ def show_viewport(mine_map, x, y):
 
 
 def load_mine():
-    with open(r"C:\Users\Shwun\OneDrive\Desktop\2. PRG 1\ASSIGNMENT\PRG1Assignment\level1.txt" \
-    "", "r") as f:
+    with open(r"C:\Users\Shwun\OneDrive\Desktop\2. PRG 1\ASSIGNMENT\PRG1Assignment\level1.txt", "r") as f:
         return [list(line.rstrip("\n")) for line in f]
 
 def enter_mine(player, mine_map):
@@ -333,7 +332,7 @@ def enter_mine(player, mine_map):
             print("Invalid action.")
 
     else:
-        print("You have no turns left today. Returning to town...")
+        print("can't carry any more, so you can't go that way. You are exhausted. You place your portal stone here and zap back to town. ")
         player['mine_pos'] = (x, y)
         player['day'] += 1
 
