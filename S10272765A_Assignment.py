@@ -57,7 +57,7 @@ def sell_minerals(player):
     player['gp'] += total_sale
     player['load'] = 0
     print(f"Total GP earned from selling: {total_sale}")
-    print(f"Current GP: {player['gp']}")
+    print(f"You now have {player['gp']} GP!")
 #shop menu 
 
 def buy_stuff_menu(player):
@@ -96,16 +96,22 @@ Your choice?""")
 
 def print_player_info(player):
     pickaxe_name = {1: "copper", 2: "silver"}.get(player['pickaxe_level'], "unknown")
+  
+    pos = player.get('mine_pos', (0, 0))
+
     print(f"""
 ----- Player Information -----
-Name: {player['name']}
-Portal position: {player['portal_pos']}
-Pickaxe level: {player['pickaxe_level']} ({pickaxe_name})
+Name: {player.get('name', 'Unknown')}
+Current position: {pos}
+Pickaxe level: {player.get('pickaxe_level', 1)} ({pickaxe_name})
+Gold: {player['inventory'].get('gold', 0)}
+Silver: {player['inventory'].get('silver', 0)}
+Copper: {player['inventory'].get('copper', 0)}
 ------------------------------
-Load: {player['load']} / {player['backpack_capacity']}
+Load: {player.get('load', 0)} / {player.get('backpack_capacity', 12)}
 ------------------------------
-GP: {player['gp']}
-Steps taken: {player['steps']}
+GP: {player.get('gp', 0)}
+Steps taken: {player.get('steps', 0)}
 ------------------------------
 """)
     
